@@ -1,65 +1,130 @@
-import Image from "next/image";
+import { createAdminClient } from '@/lib/supabase/server'
+import { Package, Tags, Image as ImageIcon, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
 
-export default function Home() {
+export const revalidate = 0 // Disable cache for dashboard
+
+export default async function DashboardHome() {
+  const supabase = createAdminClient()
+
+  // Fetch metrics in parallel
+  const [
+    { count: productsCount },
+    { count: categoriesCount },
+    { count: slidersCount },
+    { data: recentProducts }
+  ] = await Promise.all([
+    supabase.from('products').select('*', { count: 'exact', head: true }),
+    supabase.from('categories').select('*', { count: 'exact', head: true }),
+    supabase.from('sliders').select('*', { count: 'exact', head: true }),
+    supabase.from('products')
+      .select('id, name, price, is_active, created_at, category:categories(name)')
+      .order('created_at', { ascending: false })
+      .limit(5)
+  ])
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Bienvenido al Panel de Control</h2>
+        <p className="text-gray-500 mt-1">Aquí puedes gestionar todo el contenido de tu catálogo.</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Metric Cards */}
+        <div className="rounded-xl border bg-white dark:bg-[#0f172a] dark:border-gray-800 p-6 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Total Productos</h3>
+            <Package className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="text-2xl font-bold">{productsCount || 0}</div>
+          <p className="text-xs text-gray-500 mt-1">Productos en el catálogo</p>
+        </div>
+
+        <div className="rounded-xl border bg-white dark:bg-[#0f172a] dark:border-gray-800 p-6 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Categorías</h3>
+            <Tags className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="text-2xl font-bold">{categoriesCount || 0}</div>
+          <p className="text-xs text-gray-500 mt-1">Categorías activas</p>
+        </div>
+
+        <div className="rounded-xl border bg-white dark:bg-[#0f172a] dark:border-gray-800 p-6 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Hero Sliders</h3>
+            <ImageIcon className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="text-2xl font-bold">{slidersCount || 0}</div>
+          <p className="text-xs text-gray-500 mt-1">Imágenes en el carrusel</p>
+        </div>
+
+        <div className="rounded-xl border bg-white dark:bg-[#0f172a] dark:border-gray-800 p-6 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Visitas (Demo)</h3>
+            <TrendingUp className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="text-2xl font-bold">--</div>
+          <p className="text-xs text-gray-500 mt-1">Requiere Google Analytics</p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="rounded-xl border bg-white dark:bg-[#0f172a] dark:border-gray-800 shadow-sm lg:col-span-4 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold tracking-tight">Últimos Productos Añadidos</h3>
+            <Link href="/products" className="text-sm text-[var(--color-brand-bright)] hover:underline">
+              Ver todos
+            </Link>
+          </div>
+          <div className="relative w-full overflow-auto">
+            <table className="w-full caption-bottom text-sm">
+              <thead className="[&_tr]:border-b dark:[&_tr]:border-gray-800">
+                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                  <th className="h-12 px-4 text-left align-middle font-medium text-gray-500">Producto</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-gray-500">Categoría</th>
+                  <th className="h-12 px-4 text-right align-middle font-medium text-gray-500">Precio</th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:last-child]:border-0">
+                {recentProducts?.map((product) => (
+                  <tr key={product.id} className="border-b transition-colors dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <td className="p-4 align-middle font-medium">{product.name}</td>
+                    <td className="p-4 align-middle">
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                        {((product as any).category as any)?.name || 'Sin categoría'}
+                      </span>
+                    </td>
+                    <td className="p-4 align-middle text-right">${product.price.toFixed(2)}</td>                  </tr>
+                ))}
+                {(!recentProducts || recentProducts.length === 0) && (
+                  <tr>
+                    <td colSpan={3} className="p-4 text-center text-gray-500">
+                      No hay productos registrados aún.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-white dark:bg-[#0f172a] dark:border-gray-800 shadow-sm lg:col-span-3 p-6 text-center flex flex-col items-center justify-center">
+          <div className="mb-4 bg-[var(--color-brand-pale)] dark:bg-gray-800 p-4 rounded-full">
+            <Package className="w-8 h-8 text-[var(--color-brand-royal)]" />
+          </div>
+          <h3 className="text-lg font-semibold tracking-tight">Empieza a Añadir</h3>
+          <p className="text-sm text-gray-500 mt-2 mb-6">
+            Sube tu primer producto con imágenes para que sea visible en el catálogo de clientes.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link 
+            href="/products/new" 
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-[var(--color-brand-royal)] text-white shadow hover:bg-[var(--color-brand-deep)] h-9 px-4 py-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Añadir Producto
+          </Link>
         </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }
