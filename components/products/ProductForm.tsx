@@ -22,6 +22,11 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
   const isEditing = !!initialData
   
   const [isLoading, setIsLoading] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
+
+  const handleImageError = (url: string) => {
+    setImageErrors(prev => ({ ...prev, [url]: true }))
+  }
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -195,8 +200,20 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
                  <h3 className="text-sm font-medium mb-3 text-gray-500">Imágenes subidas ({images.length})</h3>
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                    {images.map((img, index) => (
-                     <div key={img.url + index} className="group relative aspect-square rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800 dark:border-gray-700">
-                       <img src={img.url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                     <div key={img.url + index} className="group relative aspect-square rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800 dark:border-gray-700 flex items-center justify-center">
+                       {imageErrors[img.url] ? (
+                         <div className="flex flex-col items-center gap-1">
+                           <ImageIcon className="w-6 h-6 text-gray-400" />
+                           <span className="text-[10px] text-gray-400 font-bold uppercase">Sin imagen</span>
+                         </div>
+                       ) : (
+                         <img 
+                           src={img.url} 
+                           alt="" 
+                           onError={() => handleImageError(img.url)}
+                           className="w-full h-full object-cover" 
+                         />
+                       )}
                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-start justify-end p-2">
                          <button 
                            type="button" 
