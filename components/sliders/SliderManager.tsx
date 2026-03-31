@@ -369,12 +369,12 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
             </div>
 
             <div className="flex border-t dark:border-gray-800">
-              <button onClick={() => handleEdit(slider)} className="flex-1 flex items-center justify-center gap-2 py-3 text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <button onClick={() => handleEdit(slider)} className="flex-1 flex items-center justify-center gap-2 py-3 text-white-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 <Edit2 className="w-4 h-4" />
                 <span className="text-sm font-bold">Editar</span>
               </button>
               <div className="w-[1px] bg-gray-200 dark:bg-gray-800"></div>
-              <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-white-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 <Trash2 className="w-4 h-4" />
                 <span className="text-sm font-bold">Eliminar</span>
               </button>

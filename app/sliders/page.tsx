@@ -17,7 +17,7 @@ export default async function SlidersPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-sm border dark:border-gray-800 p-6">
+      <div className="rounded-xl shadow-sm border dark:border-gray-800 p-6">
         <SliderManager initialSliders={sliders} />
       </div>
     </div>
