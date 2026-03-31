@@ -313,10 +313,10 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
                 </td>
                 <td className="px-5 py-4 text-right">
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => handleEdit(slider)} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Editar">
+                    <button onClick={() => handleEdit(slider)} className="p-2 text-white-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Editar">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Eliminar">
+                    <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="p-2 text-white-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Eliminar">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
