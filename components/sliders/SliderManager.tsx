@@ -135,11 +135,11 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
         </button>
       </div>
 
-      {/* Formulario Mobile (se muestra fuera de la tabla en móvil si está editando) */}
-      {isEditing && (
-        <div className="md:hidden bg-blue dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4">
-          <h3 className="font-bold text-lg">
-            {isEditing === 'new' ? 'Nueva Imagen' : 'Editar Imagen'}
+      {/* Formulario Mobile para Nuevo Slider (solo si está creando) */}
+      {isEditing === 'new' && (
+        <div className="md:hidden bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4 shadow-sm">
+          <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100">
+            Nueva Imagen
           </h3>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
@@ -340,46 +340,111 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
       {/* Vista de Móvil (Cards) */}
       <div className="md:hidden space-y-4">
         {initialSliders.map((slider) => (
-          <div key={slider.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 overflow-hidden shadow-sm flex flex-col">
-            <div className="relative aspect-[21/9] bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              {imageErrors[slider.id] || !slider.image_url ? (
-                <span className="text-sm text-gray-400 font-bold uppercase tracking-widest">Sin imagen</span>
-              ) : (
-                <img
-                  src={slider.image_url}
-                  alt=""
-                  onError={() => handleImageError(slider.id)}
-                  className="w-full h-full object-cover"
-                />
-              )}
-              <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">
-                Orden: {slider.display_order}
+          isEditing === slider.id ? (
+            <div key={slider.id} className="bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4 shadow-sm">
+              <div className="flex justify-between items-center border-b border-blue-200 dark:border-blue-800/50 pb-2">
+                <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100">Editar Imagen</h3>
               </div>
-              <div className="absolute top-2 right-2 flex gap-1">
-                {slider.is_active
-                  ? <span className="bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm">ACTIVO</span>
-                  : <span className="bg-gray-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm">OCULTO</span>}
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-xs text-gray-500 font-bold uppercase tracking-wider">Banner Preview *</label>
+                  {formData.image_url ? (
+                    <div className="relative w-full aspect-[21/9] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-700 group flex items-center justify-center">
+                      {imageErrors['form_preview'] ? (
+                        <span className="text-sm text-gray-400 font-bold uppercase tracking-widest">Sin imagen</span>
+                      ) : (
+                        <img src={formData.image_url} alt="" onError={() => handleImageError('form_preview')} className="w-full h-full object-cover" />
+                      )}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <button type="button" onClick={() => setFormData({ ...formData, image_url: '' })} className="bg-red-500 text-white p-2 rounded-full shadow-lg">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative w-full aspect-[21/9] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50 flex flex-col items-center justify-center">
+                      {isUploading ? <Loader2 className="w-8 h-8 animate-spin text-blue-500" /> : <ImageIcon className="w-10 h-10 text-gray-400" />}
+                      <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-500 font-bold uppercase">Título</label>
+                    <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-500 font-bold uppercase">Subtítulo</label>
+                    <input type="text" value={formData.subtitle} onChange={e => setFormData({ ...formData, subtitle: e.target.value })} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-500 font-bold uppercase">Link URL</label>
+                    <input type="text" value={formData.link_url} onChange={e => setFormData({ ...formData, link_url: e.target.value })} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <div className="flex-1 space-y-1">
+                      <label className="text-xs text-gray-500 font-bold uppercase">Orden</label>
+                      <input type="number" required value={formData.display_order} onChange={e => setFormData({ ...formData, display_order: e.target.value })} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
+                    </div>
+                    <div className="flex items-center pt-5">
+                      <label className="flex items-center gap-3 cursor-pointer p-3 border rounded-lg bg-white dark:bg-[#0f172a] dark:border-gray-800 hover:bg-gray-50 flex-1">
+                        <input type="checkbox" checked={formData.is_active} onChange={e => setFormData({ ...formData, is_active: e.target.checked })} className="w-5 h-5 rounded text-[var(--color-brand-royal)]" />
+                        <span className="font-bold text-gray-800 dark:text-gray-200">Activo</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button type="submit" disabled={isLoading || isUploading} className="flex-1 bg-[var(--color-brand-royal)] text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2"><Save className="w-5 h-5"/> Guardar</button>
+                  <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 text-gray-800 dark:text-white dark:bg-gray-800 py-3 rounded-lg font-bold flex items-center justify-center gap-2"><X className="w-5 h-5"/> Cancelar</button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div key={slider.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 overflow-hidden shadow-sm flex flex-col">
+              <div className="relative aspect-[21/9] bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                {imageErrors[slider.id] || !slider.image_url ? (
+                  <span className="text-sm text-gray-400 font-bold uppercase tracking-widest">Sin imagen</span>
+                ) : (
+                  <img
+                    src={slider.image_url}
+                    alt=""
+                    onError={() => handleImageError(slider.id)}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">
+                  Orden: {slider.display_order}
+                </div>
+                <div className="absolute top-2 right-2 flex gap-1">
+                  {slider.is_active
+                    ? <span className="bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm">ACTIVO</span>
+                    : <span className="bg-gray-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm">OCULTO</span>}
+                </div>
+              </div>
+
+              <div className="p-4 flex-1">
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">{slider.title || <span className="italic text-gray-400 font-normal">Sin título</span>}</h3>
+                <p className="text-xs text-gray-500 mt-1">{slider.subtitle || <span className="italic text-gray-400 font-normal">Sin subtítulo</span>}</p>
+                {slider.link_url && <p className="text-[10px] font-mono text-blue-500 mt-2 truncate">🔗 {slider.link_url}</p>}
+              </div>
+
+              <div className="flex border-t dark:border-gray-800">
+                <button onClick={() => handleEdit(slider)} className="flex-1 flex items-center justify-center gap-2 py-3 text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Edit2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Editar</span>
+                </button>
+                <div className="w-[1px] bg-gray-200 dark:bg-gray-800"></div>
+                <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Eliminar</span>
+                </button>
               </div>
             </div>
-
-            <div className="p-4 flex-1">
-              <h3 className="font-bold text-gray-900 dark:text-gray-100">{slider.title || <span className="italic text-gray-400 font-normal">Sin título</span>}</h3>
-              <p className="text-xs text-gray-500 mt-1">{slider.subtitle || <span className="italic text-gray-400 font-normal">Sin subtítulo</span>}</p>
-              {slider.link_url && <p className="text-[10px] font-mono text-blue-500 mt-2 truncate">🔗 {slider.link_url}</p>}
-            </div>
-
-            <div className="flex border-t dark:border-gray-800">
-              <button onClick={() => handleEdit(slider)} className="flex-1 flex items-center justify-center gap-2 py-3 text-white-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                <Edit2 className="w-4 h-4" />
-                <span className="text-sm font-bold">Editar</span>
-              </button>
-              <div className="w-[1px] bg-gray-200 dark:bg-gray-800"></div>
-              <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-white-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                <Trash2 className="w-4 h-4" />
-                <span className="text-sm font-bold">Eliminar</span>
-              </button>
-            </div>
-          </div>
+          )
         ))}
 
         {initialSliders.length === 0 && !isEditing && (

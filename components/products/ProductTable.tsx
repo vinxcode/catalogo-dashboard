@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Edit2, Trash2, Plus, AlertCircle, ImageIcon } from 'lucide-react'
 import { deleteProduct } from '@/actions/products'
 import { toast } from 'sonner'
@@ -12,6 +12,11 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
   const [products, setProducts] = useState(initialProducts)
   const [isLoading, setIsLoading] = useState(false)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
+
+  // Sync state when DB updates
+  useEffect(() => {
+    setProducts(initialProducts)
+  }, [initialProducts])
 
   const handleImageError = (id: string) => {
     setImageErrors(prev => ({ ...prev, [id]: true }))
@@ -143,8 +148,8 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
       {/* Vista de Móvil (Cards) */}
       <div className="md:hidden space-y-4">
         {products.map((product) => (
-          <div key={product.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 p-4 shadow-sm space-y-4">
-            <div className="flex gap-4">
+          <div key={product.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 shadow-sm flex flex-col overflow-hidden">
+            <div className="p-4 flex gap-4">
               <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border dark:border-gray-700 flex items-center justify-center">
                 {product.product_images?.[0]?.image_url && !imageErrors[product.id] ? (
                   <img 
@@ -174,23 +179,24 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
                   {product.is_featured && <span className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded font-medium">⭐ Destacado</span>}
                 </div>
                 <p className="text-[10px] text-gray-500 mt-2 line-clamp-1">{product.description || 'Sin descripción'}</p>
+                <div className="mt-2">
+                  {product.is_active 
+                    ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">VISIBLE</span>
+                    : <span className="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">OCULTO</span>}
+                </div>
               </div>
             </div>
             
-            <div className="flex items-center justify-between pt-2 border-t dark:border-gray-800">
-               <div>
-                  {product.is_active 
-                    ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">VISIBLE</span>
-                    : <span className="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">OCULTO</span>}
-               </div>
-               <div className="flex gap-2">
-                 <Link href={`/products/${product.id}`} className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <Edit2 className="w-4 h-4" />
-                 </Link>
-                 <button onClick={() => handleDelete(product.id, product.name)} disabled={isLoading} className="p-2 text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <Trash2 className="w-4 h-4" />
-                 </button>
-               </div>
+            <div className="flex border-t dark:border-gray-800">
+               <Link href={`/products/${product.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Edit2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Editar</span>
+               </Link>
+               <div className="w-[1px] bg-gray-200 dark:bg-gray-800"></div>
+               <button onClick={() => handleDelete(product.id, product.name)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Eliminar</span>
+               </button>
             </div>
           </div>
         ))}

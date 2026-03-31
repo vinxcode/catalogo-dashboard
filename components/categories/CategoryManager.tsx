@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, Edit2, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Trash2, Edit2, AlertCircle, Save, X } from 'lucide-react'
 import { createCategory, updateCategory, deleteCategory } from '@/actions/categories'
 import { toast } from 'sonner'
 import { Category } from '@/types/database.types'
@@ -11,6 +11,11 @@ export function CategoryManager({ initialCategories }: { initialCategories: Cate
   const router = useRouter()
   const [categories, setCategories] = useState(initialCategories)
   const [isEditing, setIsEditing] = useState<string | null>(null)
+  
+  // Sync state when DB updates so created/edited categories show immediately
+  useEffect(() => {
+    setCategories(initialCategories)
+  }, [initialCategories])
   const [formData, setFormData] = useState({ name: '', slug: '', icon: '', display_order: '0', is_active: true })
   const [isLoading, setIsLoading] = useState(false)
 
@@ -90,39 +95,37 @@ export function CategoryManager({ initialCategories }: { initialCategories: Cate
         </button>
       </div>
 
-      {/* Formulario Mobile */}
-      {isEditing && (
+      {/* Formulario Mobile para Nueva Categoría (solo visible si crea) */}
+      {isEditing === 'new' && (
         <div className="md:hidden bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4">
-          <h3 className="font-bold text-lg">
-            {isEditing === 'new' ? 'Nueva Categoría' : 'Editar Categoría'}
-          </h3>
+          <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100">Nueva Categoría</h3>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-1">
-                 <label className="text-xs text-gray-500">Icono</label>
-                 <input type="text" placeholder="☕ Ej" value={formData.icon} onChange={e=>setFormData({...formData, icon: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+                 <label className="text-xs text-gray-500 font-bold uppercase">Icono</label>
+                 <input type="text" placeholder="☕ Ej" value={formData.icon} onChange={e=>setFormData({...formData, icon: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
                </div>
                <div className="space-y-1">
-                 <label className="text-xs text-gray-500">Orden</label>
-                 <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+                 <label className="text-xs text-gray-500 font-bold uppercase">Orden</label>
+                 <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
                </div>
             </div>
             
             <div className="space-y-1">
-              <label className="text-xs text-gray-500">Nombre *</label>
-              <input type="text" required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+              <label className="text-xs text-gray-500 font-bold uppercase">Nombre *</label>
+              <input type="text" required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-bold" />
             </div>
 
             <div className="flex items-center pt-2">
-               <label className="flex items-center gap-3 cursor-pointer">
-                 <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-5 h-5 rounded" />
-                 <span className="font-medium">Categoría Activa</span>
+               <label className="flex items-center gap-3 cursor-pointer p-3 border rounded-lg bg-white dark:bg-[#0f172a] dark:border-gray-800 w-full hover:bg-gray-50">
+                 <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-5 h-5 rounded text-[var(--color-brand-royal)]" />
+                 <span className="font-bold text-gray-800 dark:text-gray-200">Categoría Activa</span>
                </label>
             </div>
 
             <div className="flex gap-2 pt-2">
-              <button type="submit" disabled={isLoading} className="flex-1 bg-[var(--color-brand-royal)] text-white py-3 rounded-lg font-bold">Guardar</button>
-              <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 dark:bg-gray-800 py-3 rounded-lg font-bold">Cancelar</button>
+              <button type="submit" disabled={isLoading} className="flex-1 bg-[var(--color-brand-royal)] text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2"><Save className="w-5 h-5"/> Guardar</button>
+              <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 text-gray-800 dark:text-white dark:bg-gray-800 py-3 rounded-lg font-bold flex items-center justify-center gap-2"><X className="w-5 h-5"/> Cancelar</button>
             </div>
           </form>
         </div>
@@ -216,33 +219,70 @@ export function CategoryManager({ initialCategories }: { initialCategories: Cate
       {/* Vista de Móvil (Cards) */}
       <div className="md:hidden space-y-4">
         {categories.map((cat) => (
-          <div key={cat.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 p-4 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-2xl border dark:border-gray-700 shadow-inner">
-                {cat.icon}
+          isEditing === cat.id ? (
+            <div key={cat.id} className="bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4 shadow-sm">
+              <div className="flex justify-between items-center border-b border-blue-200 dark:border-blue-800/50 pb-2">
+                <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100">Editar Categoría</h3>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                   <h3 className="font-bold text-gray-900 dark:text-gray-100">{cat.name}</h3>
-                   <span className="text-[10px] font-mono text-gray-400">Orden: {cat.display_order}</span>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                   {cat.is_active 
-                     ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">ACTIVA</span>
-                     : <span className="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">OCULTA</span>}
-                   
-                   <div className="flex gap-2">
-                      <button onClick={() => handleEdit(cat)} className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(cat.id, cat.name)} disabled={isLoading} className="p-2 text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-1">
+                     <label className="text-xs text-gray-500 font-bold uppercase">Icono</label>
+                     <input type="text" placeholder="☕ Ej" value={formData.icon} onChange={e=>setFormData({...formData, icon: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
+                   </div>
+                   <div className="space-y-1">
+                     <label className="text-xs text-gray-500 font-bold uppercase">Orden</label>
+                     <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-medium" />
                    </div>
                 </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-500 font-bold uppercase">Nombre *</label>
+                  <input type="text" required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700 font-bold" />
+                </div>
+                <div className="flex items-center pt-2">
+                   <label className="flex items-center gap-3 cursor-pointer p-3 border rounded-lg bg-white dark:bg-[#0f172a] dark:border-gray-800 w-full hover:bg-gray-50">
+                     <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-5 h-5 rounded text-[var(--color-brand-royal)]" />
+                     <span className="font-bold text-gray-800 dark:text-gray-200">Categoría Activa</span>
+                   </label>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button type="submit" disabled={isLoading} className="flex-1 bg-[var(--color-brand-royal)] text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2"><Save className="w-5 h-5"/> Guardar</button>
+                  <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 text-gray-800 dark:text-white dark:bg-gray-800 py-3 rounded-lg font-bold flex items-center justify-center gap-2"><X className="w-5 h-5"/> Cancelar</button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div key={cat.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+              <div className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-2xl border dark:border-gray-700 shadow-inner">
+                  {cat.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                     <h3 className="font-bold text-gray-900 dark:text-gray-100">{cat.name}</h3>
+                     <span className="text-[10px] font-mono text-gray-400 font-bold">Orden: {cat.display_order}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                     {cat.is_active 
+                       ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">ACTIVA</span>
+                       : <span className="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">OCULTA</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex border-t dark:border-gray-800">
+                <button onClick={() => handleEdit(cat)} className="flex-1 flex items-center justify-center gap-2 py-3 text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Edit2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Editar</span>
+                </button>
+                <div className="w-[1px] bg-gray-200 dark:bg-gray-800"></div>
+                <button onClick={() => handleDelete(cat.id, cat.name)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Eliminar</span>
+                </button>
               </div>
             </div>
-          </div>
+          )
         ))}
         {categories.length === 0 && !isEditing && (
           <div className="text-center py-10 bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800">
