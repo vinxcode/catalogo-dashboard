@@ -11,6 +11,11 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
   const router = useRouter()
   const [products, setProducts] = useState(initialProducts)
   const [isLoading, setIsLoading] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
+
+  const handleImageError = (id: string) => {
+    setImageErrors(prev => ({ ...prev, [id]: true }))
+  }
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`¿Estás seguro de que quieres eliminar la publicación "${name}"?\nEsta acción es irreversible y borrará el producto del catálogo público.`)) return
@@ -60,14 +65,18 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
                 <tr key={product.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition">
                   <td className="px-6 py-4">
                     <div className="w-16 h-16 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center border dark:border-gray-700">
-                      {product.product_images?.[0]?.image_url ? (
+                      {product.product_images?.[0]?.image_url && !imageErrors[product.id] ? (
                         <img 
                           src={product.product_images[0].image_url} 
-                          alt={product.name} 
+                          alt="" 
+                          onError={() => handleImageError(product.id)}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <ImageIcon className="w-6 h-6 text-gray-400" />
+                        <div className="flex flex-col items-center gap-1">
+                          <ImageIcon className="w-5 h-5 text-gray-400" />
+                          <span className="text-[8px] text-gray-400 font-bold uppercase text-center leading-tight">Sin imagen</span>
+                        </div>
                       )}
                     </div>
                   </td>
@@ -136,11 +145,19 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
         {products.map((product) => (
           <div key={product.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 p-4 shadow-sm space-y-4">
             <div className="flex gap-4">
-              <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border dark:border-gray-700">
-                {product.product_images?.[0]?.image_url ? (
-                  <img src={product.product_images[0].image_url} alt={product.name} className="w-full h-full object-cover" />
+              <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border dark:border-gray-700 flex items-center justify-center">
+                {product.product_images?.[0]?.image_url && !imageErrors[product.id] ? (
+                  <img 
+                    src={product.product_images[0].image_url} 
+                    alt="" 
+                    onError={() => handleImageError(product.id)}
+                    className="w-full h-full object-cover" 
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-6 h-6 text-gray-400" /></div>
+                  <div className="flex flex-col items-center gap-1">
+                    <ImageIcon className="w-6 h-6 text-gray-400" />
+                    <span className="text-[9px] text-gray-400 font-bold uppercase">Sin imagen</span>
+                  </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">

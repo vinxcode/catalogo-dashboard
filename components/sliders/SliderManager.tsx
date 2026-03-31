@@ -21,6 +21,11 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
+
+  const handleImageError = (id: string) => {
+    setImageErrors(prev => ({ ...prev, [id]: true }))
+  }
 
   const handleAddNew = () => {
     setIsEditing('new')
@@ -138,7 +143,7 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
               <label className="block text-xs text-gray-500 font-medium tracking-wider">BANNER PREVIEW *</label>
               {formData.image_url ? (
                 <div className="relative w-full aspect-[21/9] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-700 group">
-                  <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={formData.image_url} alt="" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="bg-red-500 text-white p-2 rounded-full shadow-lg">
                       <X className="w-5 h-5" />
@@ -216,7 +221,7 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
                        <div className="relative aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center">
                           {formData.image_url ? (
                             <>
-                              <img src={formData.image_url} className="w-full h-full object-cover" />
+                              <img src={formData.image_url} alt="" className="w-full h-full object-cover" />
                               <button type="button" onClick={()=>setFormData({...formData, image_url: ''})} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"><X className="w-3 h-3" /></button>
                             </>
                           ) : (
@@ -260,8 +265,17 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
               <tr key={slider.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition">
                 <td className="px-5 py-4 text-center font-mono text-gray-500">{slider.display_order}</td>
                 <td className="px-5 py-4">
-                  <div className="w-40 aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded border dark:border-gray-700 overflow-hidden shadow-sm">
-                    <img src={slider.image_url} alt={slider.title || 'Slider image'} className="w-full h-full object-cover" />
+                  <div className="w-40 aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded border dark:border-gray-700 overflow-hidden shadow-sm flex items-center justify-center">
+                    {imageErrors[slider.id] || !slider.image_url ? (
+                      <span className="text-[10px] text-gray-400 font-bold uppercase">Sin imagen</span>
+                    ) : (
+                      <img 
+                        src={slider.image_url} 
+                        alt="" 
+                        onError={() => handleImageError(slider.id)}
+                        className="w-full h-full object-cover" 
+                      />
+                    )}
                   </div>
                 </td>
                 <td className="px-5 py-4">
@@ -306,8 +320,17 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
       <div className="md:hidden space-y-4">
         {initialSliders.map((slider) => (
           <div key={slider.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 overflow-hidden shadow-sm flex flex-col">
-            <div className="relative aspect-[21/9]">
-              <img src={slider.image_url} alt={slider.title || 'Slider'} className="w-full h-full object-cover" />
+            <div className="relative aspect-[21/9] bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              {imageErrors[slider.id] || !slider.image_url ? (
+                <span className="text-sm text-gray-400 font-bold uppercase tracking-widest">Sin imagen</span>
+              ) : (
+                <img 
+                  src={slider.image_url} 
+                  alt="" 
+                  onError={() => handleImageError(slider.id)}
+                  className="w-full h-full object-cover" 
+                />
+              )}
               <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">
                 Orden: {slider.display_order}
               </div>
