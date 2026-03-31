@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, Edit2, AlertCircle, ImageIcon, X, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Edit2, AlertCircle, ImageIcon, X, Loader2, Save } from 'lucide-react'
 import { createSlider, updateSlider, deleteSlider } from '@/actions/sliders'
 import { uploadImage, deleteImage } from '@/actions/storage'
 import { toast } from 'sonner'
