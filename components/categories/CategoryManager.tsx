@@ -90,91 +90,165 @@ export function CategoryManager({ initialCategories }: { initialCategories: Cate
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left align-middle">
-          <thead className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-            <tr>
-              <th className="px-4 py-3 font-semibold w-16 text-center">Orden</th>
-              <th className="px-4 py-3 font-semibold w-16 text-center">Icono</th>
-              <th className="px-4 py-3 font-semibold">Nombre</th>
-              <th className="px-4 py-3 font-semibold hidden sm:table-cell">Slug</th>
-              <th className="px-4 py-3 font-semibold w-24 text-center">Estado</th>
-              <th className="px-4 py-3 font-semibold text-right w-24">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+      {/* Formulario Mobile */}
+      {isEditing && (
+        <div className="md:hidden bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4">
+          <h3 className="font-bold text-lg">
+            {isEditing === 'new' ? 'Nueva Categoría' : 'Editar Categoría'}
+          </h3>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1">
+                 <label className="text-xs text-gray-500">Icono</label>
+                 <input type="text" placeholder="☕ Ej" value={formData.icon} onChange={e=>setFormData({...formData, icon: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+               </div>
+               <div className="space-y-1">
+                 <label className="text-xs text-gray-500">Orden</label>
+                 <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+               </div>
+            </div>
             
-            {/* Fila de creación/edición en línea */}
-            {isEditing && (
-              <tr className="bg-blue-50/50 dark:bg-blue-900/20">
-                <td colSpan={6} className="p-4">
-                  <form onSubmit={handleSave} className="flex flex-wrap md:flex-nowrap gap-4 items-end">
-                    <div className="w-20">
-                      <label className="block text-xs text-gray-500 mb-1">Orden</label>
-                      <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
-                    </div>
-                    <div className="w-20">
-                      <label className="block text-xs text-gray-500 mb-1">Icono</label>
-                      <input type="text" placeholder="☕ Ej" value={formData.icon} onChange={e=>setFormData({...formData, icon: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
-                    </div>
-                    <div className="flex-1 min-w-[150px]">
-                      <label className="block text-xs text-gray-500 mb-1">Nombre *</label>
-                      <input type="text" required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
-                    </div>
-                    <div className="flex-1 min-w-[150px] hidden sm:block">
-                      <label className="block text-xs text-gray-500 mb-1">Slug *</label>
-                      <input type="text" required value={formData.slug} onChange={e=>setFormData({...formData, slug: e.target.value})} className="w-full p-2 border rounded text-sm bg-gray-50 dark:bg-gray-800 dark:border-gray-700" />
-                    </div>
-                    <div className="w-24 flex items-center mb-2">
-                       <label className="flex items-center gap-2 cursor-pointer text-sm">
-                         <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="rounded text-blue-600 focus:ring-blue-500" />
-                         <span>Activo</span>
-                       </label>
-                    </div>
-                    <div className="flex gap-2">
-                      <button type="submit" disabled={isLoading} className="bg-[var(--color-brand-action)] hover:bg-green-600 text-white px-4 py-2 rounded text-sm disabled:opacity-50">Guardar</button>
-                      <button type="button" onClick={() => setIsEditing(null)} className="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded text-sm">Cancelar</button>
-                    </div>
-                  </form>
-                </td>
-              </tr>
-            )}
+            <div className="space-y-1">
+              <label className="text-xs text-gray-500">Nombre *</label>
+              <input type="text" required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+            </div>
 
-            {/* Listado de categorías */}
-            {categories.map((cat) => (
-              <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td className="px-4 py-3 text-center text-gray-500">{cat.display_order}</td>
-                <td className="px-4 py-3 text-center text-xl">{cat.icon}</td>
-                <td className="px-4 py-3 font-medium">{cat.name}</td>
-                <td className="px-4 py-3 text-gray-500 hidden sm:table-cell text-xs font-mono">{cat.slug}</td>
-                <td className="px-4 py-3 text-center">
-                   {cat.is_active 
-                     ? <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full dark:bg-green-900 dark:text-green-300">Activo</span>
-                     : <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full dark:bg-gray-700 dark:text-gray-300">Oculto</span>}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex gap-2 justify-end">
-                    <button onClick={() => handleEdit(cat)} className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Editar">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(cat.id, cat.name)} disabled={isLoading} className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Eliminar">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            
-            {categories.length === 0 && !isEditing && (
+            <div className="flex items-center pt-2">
+               <label className="flex items-center gap-3 cursor-pointer">
+                 <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-5 h-5 rounded" />
+                 <span className="font-medium">Categoría Activa</span>
+               </label>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button type="submit" disabled={isLoading} className="flex-1 bg-[var(--color-brand-royal)] text-white py-3 rounded-lg font-bold">Guardar</button>
+              <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 dark:bg-gray-800 py-3 rounded-lg font-bold">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Vista de Escritorio (Tabla) */}
+      <div className="hidden md:block bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left align-middle">
+            <thead className="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-b dark:border-gray-800">
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p>No hay categorías registradas.</p>
-                </td>
+                <th className="px-5 py-4 font-semibold w-16 text-center">Orden</th>
+                <th className="px-5 py-4 font-semibold w-16 text-center">Icono</th>
+                <th className="px-5 py-4 font-semibold">Nombre</th>
+                <th className="px-5 py-4 font-semibold">Slug (URL)</th>
+                <th className="px-5 py-4 font-semibold w-24 text-center">Estado</th>
+                <th className="px-5 py-4 font-semibold text-right w-24">Acciones</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              
+              {/* Formulario Inline Escritorio */}
+              {isEditing && (
+                <tr className="bg-blue-50/30 dark:bg-blue-900/10">
+                  <td colSpan={6} className="p-4">
+                    <form onSubmit={handleSave} className="flex gap-4 items-end">
+                      <div className="w-20">
+                        <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Orden</label>
+                        <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
+                      </div>
+                      <div className="w-20">
+                        <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Icono</label>
+                        <input type="text" placeholder="☕ Ej" value={formData.icon} onChange={e=>setFormData({...formData, icon: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700 text-center" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Nombre *</label>
+                        <input type="text" required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
+                      </div>
+                      <div className="w-24 mb-2">
+                         <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+                           <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="rounded text-blue-600 focus:ring-blue-500" />
+                           <span>Activo</span>
+                         </label>
+                      </div>
+                      <div className="flex gap-1 mb-1">
+                        <button type="submit" disabled={isLoading} className="bg-green-600 text-white p-2 rounded hover:bg-green-700"><Plus className="w-4 h-4" /></button>
+                        <button type="button" onClick={() => setIsEditing(null)} className="bg-gray-400 text-white p-2 rounded hover:bg-gray-500 self-center"><X className="w-4 h-4" /></button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              )}
+
+              {categories.map((cat) => (
+                <tr key={cat.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition">
+                  <td className="px-5 py-4 text-center font-mono text-gray-500">{cat.display_order}</td>
+                  <td className="px-5 py-4 text-center text-xl">{cat.icon}</td>
+                  <td className="px-5 py-4 font-bold text-gray-900 dark:text-gray-100">{cat.name}</td>
+                  <td className="px-5 py-4 text-gray-400 font-mono text-xs">{cat.slug}</td>
+                  <td className="px-5 py-4 text-center">
+                     {cat.is_active 
+                       ? <span className="bg-green-100 text-green-700 font-bold text-[10px] uppercase px-2.5 py-1 rounded dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">Activo</span>
+                       : <span className="bg-gray-100 text-gray-600 font-bold text-[10px] uppercase px-2.5 py-1 rounded dark:bg-gray-800 dark:text-gray-400">Oculto</span>}
+                  </td>
+                  <td className="px-5 py-4 text-right">
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={() => handleEdit(cat)} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Editar">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(cat.id, cat.name)} disabled={isLoading} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Eliminar">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              
+              {categories.length === 0 && !isEditing && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-16 text-center text-gray-500">
+                    <AlertCircle className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                    <p className="font-bold text-lg">No hay categorías registradas</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Vista de Móvil (Cards) */}
+      <div className="md:hidden space-y-4">
+        {categories.map((cat) => (
+          <div key={cat.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 p-4 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-2xl border dark:border-gray-700 shadow-inner">
+                {cat.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start">
+                   <h3 className="font-bold text-gray-900 dark:text-gray-100">{cat.name}</h3>
+                   <span className="text-[10px] font-mono text-gray-400">Orden: {cat.display_order}</span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                   {cat.is_active 
+                     ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">ACTIVA</span>
+                     : <span className="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">OCULTA</span>}
+                   
+                   <div className="flex gap-2">
+                      <button onClick={() => handleEdit(cat)} className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(cat.id, cat.name)} disabled={isLoading} className="p-2 text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        {categories.length === 0 && !isEditing && (
+          <div className="text-center py-10 bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800">
+            <p className="text-gray-500">No hay categorías.</p>
+          </div>
+        )}
       </div>
     </div>
   )

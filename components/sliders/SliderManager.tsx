@@ -127,121 +127,161 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Formulario Mobile (se muestra fuera de la tabla en móvil si está editando) */}
+      {isEditing && (
+        <div className="md:hidden bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4">
+          <h3 className="font-bold text-lg">
+            {isEditing === 'new' ? 'Nueva Imagen' : 'Editar Imagen'}
+          </h3>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-xs text-gray-500 font-medium tracking-wider">BANNER PREVIEW *</label>
+              {formData.image_url ? (
+                <div className="relative w-full aspect-[21/9] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-700 group">
+                  <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="bg-red-500 text-white p-2 rounded-full shadow-lg">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative w-full aspect-[21/9] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50 flex flex-col items-center justify-center">
+                  {isUploading ? <Loader2 className="w-8 h-8 animate-spin text-blue-500" /> : <ImageIcon className="w-10 h-10 text-gray-400" />}
+                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} className="absolute inset-0 opacity-0 cursor-pointer" />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs text-gray-500">Título</label>
+                <input type="text" value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-gray-500">Subtítulo</label>
+                <input type="text" value={formData.subtitle} onChange={e=>setFormData({...formData, subtitle: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-gray-500">Linl URL</label>
+                <input type="text" value={formData.link_url} onChange={e=>setFormData({...formData, link_url: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1 space-y-1">
+                   <label className="text-xs text-gray-500">Orden</label>
+                   <input type="number" value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-3 border rounded-lg dark:bg-gray-900 dark:border-gray-700" />
+                </div>
+                <div className="flex items-center pt-5">
+                   <label className="flex items-center gap-2">
+                     <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-5 h-5 rounded" />
+                     <span>Activo</span>
+                   </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button type="submit" disabled={isLoading || isUploading} className="flex-1 bg-[var(--color-brand-royal)] text-white py-3 rounded-lg font-bold">Guardar</button>
+              <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 dark:bg-gray-800 py-3 rounded-lg font-bold">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Vista de Escritorio (Tabla) */}
+      <div className="hidden md:block overflow-x-auto bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 shadow-sm">
         <table className="w-full text-sm text-left align-middle">
-          <thead className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-b dark:border-gray-800">
+          <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-800 text-gray-700 dark:text-gray-300">
             <tr>
-              <th className="px-5 py-3 font-semibold w-16 text-center">Orden</th>
-              <th className="px-5 py-3 font-semibold w-40">Imagen</th>
-              <th className="px-5 py-3 font-semibold">Texto</th>
-              <th className="px-5 py-3 font-semibold hidden sm:table-cell">Enlace URL</th>
-              <th className="px-5 py-3 font-semibold w-24 text-center">Estado</th>
-              <th className="px-5 py-3 font-semibold text-right w-24">Acciones</th>
+              <th className="px-5 py-4 font-semibold w-16 text-center">Orden</th>
+              <th className="px-5 py-4 font-semibold w-48">Imagen</th>
+              <th className="px-5 py-4 font-semibold">Texto</th>
+              <th className="px-5 py-4 font-semibold">URL Destino</th>
+              <th className="px-5 py-4 font-semibold w-24 text-center">Estado</th>
+              <th className="px-5 py-4 font-semibold text-right w-24">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            
-            {/* Formulario Inline */}
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {/* Inline Form Table Row - Desktop */}
             {isEditing && (
-              <tr className="bg-blue-50/50 dark:bg-blue-900/20">
-                <td colSpan={6} className="p-5 border-b dark:border-gray-800">
-                  <form onSubmit={handleSave} className="flex flex-col md:flex-row gap-5 items-start">
-                    
-                    {/* Imagen preview y upload */}
-                    <div className="w-full md:w-64 space-y-2">
-                       <label className="block text-xs text-gray-500 font-medium">Imagen del Banner * (1920x600px)</label>
-                       {formData.image_url ? (
-                         <div className="relative w-full aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-700 group">
-                           <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
-                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                             <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition">
-                               <X className="w-4 h-4" />
-                             </button>
-                           </div>
-                         </div>
-                       ) : (
-                         <div className="relative w-full aspect-[3/1] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50 flex flex-col items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer">
-                           {isUploading ? (
-                             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                           ) : (
-                             <>
-                              <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                              <span className="text-xs text-gray-500 px-4 text-center">Clic para subir imagen</span>
-                             </>
-                           )}
-                           <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                         </div>
-                       )}
+              <tr className="bg-blue-50/30 dark:bg-blue-900/10">
+                <td colSpan={6} className="p-4 border-b dark:border-gray-800">
+                  <form onSubmit={handleSave} className="flex gap-4 items-end">
+                    <div className="w-16">
+                      <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Orden</label>
+                      <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
                     </div>
-
-                    <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-xs text-gray-500">Título Principal</label>
-                        <input type="text" value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" placeholder="Ej. ¡Impresiones de Alta Calidad!" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="block text-xs text-gray-500">Subtítulo</label>
-                        <input type="text" value={formData.subtitle} onChange={e=>setFormData({...formData, subtitle: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" placeholder="Ej. Banners, camisas, tazas..." />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="block text-xs text-gray-500">URL del Enlace (Opcional)</label>
-                        <input type="text" value={formData.link_url} onChange={e=>setFormData({...formData, link_url: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" placeholder="/categorias/banners" />
-                      </div>
-                      
-                      <div className="flex gap-4 p-5">
-                         <div className="w-20 space-y-1">
-                           <label className="block text-xs text-gray-500">Orden</label>
-                           <input type="number" required value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
-                         </div>
-                         <div className="flex items-center pt-5">
-                           <label className="flex items-center gap-2 cursor-pointer text-sm font-medium">
-                             <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
-                             <span>Visible</span>
-                           </label>
-                         </div>
-                      </div>
+                    <div className="w-48">
+                       <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Banner (1920x600)</label>
+                       <div className="relative aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center">
+                          {formData.image_url ? (
+                            <>
+                              <img src={formData.image_url} className="w-full h-full object-cover" />
+                              <button type="button" onClick={()=>setFormData({...formData, image_url: ''})} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"><X className="w-3 h-3" /></button>
+                            </>
+                          ) : (
+                            <>
+                              {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-5 h-5 text-gray-400" />}
+                              <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} className="absolute inset-0 opacity-0 cursor-pointer" />
+                            </>
+                          )}
+                       </div>
                     </div>
-
-                    <div className="w-full md:w-auto flex md:flex-col gap-2 justify-end self-stretch md:border-l pl-0 md:pl-5 dark:border-gray-700 mt-4 md:mt-0">
-                      <button type="submit" disabled={isLoading || isUploading} className="flex-1 bg-[var(--color-brand-action)] hover:bg-green-600 text-white px-6 py-2 rounded font-medium disabled:opacity-50 transition">
-                        Guardar
-                      </button>
-                      <button type="button" onClick={() => setIsEditing(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 px-6 py-2 rounded font-medium transition">
-                        Cancelar
-                      </button>
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                       <div>
+                         <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Título</label>
+                         <input type="text" value={formData.title} onChange={e=>setFormData({...formData, title: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
+                       </div>
+                       <div>
+                         <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">Subtítulo</label>
+                         <input type="text" value={formData.subtitle} onChange={e=>setFormData({...formData, subtitle: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
+                       </div>
+                    </div>
+                    <div className="w-40">
+                       <label className="block text-[10px] text-gray-400 uppercase font-bold mb-1">URL (Opcional)</label>
+                       <input type="text" value={formData.link_url} onChange={e=>setFormData({...formData, link_url: e.target.value})} className="w-full p-2 border rounded text-sm dark:bg-gray-900 dark:border-gray-700" />
+                    </div>
+                    <div className="w-24 mb-2">
+                       <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+                         <input type="checkbox" checked={formData.is_active} onChange={e=>setFormData({...formData, is_active: e.target.checked})} className="w-4 h-4 rounded" />
+                         <span>Activo</span>
+                       </label>
+                    </div>
+                    <div className="flex gap-1 mb-1">
+                       <button type="submit" disabled={isLoading || isUploading} className="bg-green-600 text-white p-2 rounded hover:bg-green-700 shadow-sm transition"><Save className="w-4 h-4" /></button>
+                       <button type="button" onClick={()=>setIsEditing(null)} className="bg-gray-400 text-white p-2 rounded hover:bg-gray-500 shadow-sm transition"><X className="w-4 h-4" /></button>
                     </div>
                   </form>
                 </td>
               </tr>
             )}
 
-            {/* Listado */}
             {initialSliders.map((slider) => (
-              <tr key={slider.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                <td className="px-5 py-4 text-center text-gray-500">{slider.display_order}</td>
+              <tr key={slider.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition">
+                <td className="px-5 py-4 text-center font-mono text-gray-500">{slider.display_order}</td>
                 <td className="px-5 py-4">
-                  <div className="w-32 aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded overflow-hidden border dark:border-gray-700">
+                  <div className="w-40 aspect-[3/1] bg-gray-100 dark:bg-gray-800 rounded border dark:border-gray-700 overflow-hidden shadow-sm">
                     <img src={slider.image_url} alt={slider.title || 'Slider image'} className="w-full h-full object-cover" />
                   </div>
                 </td>
                 <td className="px-5 py-4">
-                  <p className="font-semibold">{slider.title || <span className="text-gray-400 italic">Sin título</span>}</p>
-                  <p className="text-gray-500 text-xs mt-1">{slider.subtitle || <span className="text-gray-400 italic">Sin subtítulo</span>}</p>
+                  <p className="font-bold text-gray-900 dark:text-gray-100 line-clamp-1">{slider.title || <span className="text-gray-400 italic font-normal">Sin título</span>}</p>
+                  <p className="text-gray-500 text-xs mt-1 line-clamp-1">{slider.subtitle || <span className="text-gray-400 italic">Sin subtítulo</span>}</p>
                 </td>
-                <td className="px-5 py-4 text-gray-500 hidden sm:table-cell text-sm">
+                <td className="px-5 py-4 text-gray-400 font-mono text-xs truncate max-w-[120px]">
                   {slider.link_url || '-'}
                 </td>
                 <td className="px-5 py-4 text-center">
                    {slider.is_active 
-                     ? <span className="bg-green-100 text-green-800 font-medium text-xs px-2.5 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">Activo</span>
-                     : <span className="bg-gray-100 text-gray-800 font-medium text-xs px-2.5 py-1 rounded-full dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700">Oculto</span>}
+                     ? <span className="bg-green-100 text-green-700 font-bold text-[10px] uppercase px-2 py-1 rounded dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">Activo</span>
+                     : <span className="bg-gray-100 text-gray-600 font-bold text-[10px] uppercase px-2 py-1 rounded dark:bg-gray-800 dark:text-gray-400">Oculto</span>}
                 </td>
                 <td className="px-5 py-4 text-right">
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => handleEdit(slider)} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Editar">
+                    <button onClick={() => handleEdit(slider)} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Editar">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Eliminar">
+                    <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Eliminar">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -251,15 +291,59 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
             
             {initialSliders.length === 0 && !isEditing && (
               <tr>
-                <td colSpan={6} className="px-5 py-12 text-center text-gray-500">
-                  <AlertCircle className="w-10 h-10 mx-auto mb-3 text-gray-400" />
-                  <p className="text-lg font-medium">No hay banners en el carrusel.</p>
-                  <p className="text-sm">Añade imágenes promocionales para mostrar en la página de inicio.</p>
+                <td colSpan={6} className="px-5 py-20 text-center text-gray-500">
+                  <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-xl font-bold">No hay imágenes en el slider</p>
+                  <p className="text-sm mt-1">Carga banners promocionales para tu tienda.</p>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Vista de Móvil (Cards) */}
+      <div className="md:hidden space-y-4">
+        {initialSliders.map((slider) => (
+          <div key={slider.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 overflow-hidden shadow-sm flex flex-col">
+            <div className="relative aspect-[21/9]">
+              <img src={slider.image_url} alt={slider.title || 'Slider'} className="w-full h-full object-cover" />
+              <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">
+                Orden: {slider.display_order}
+              </div>
+              <div className="absolute top-2 right-2 flex gap-1">
+                 {slider.is_active 
+                    ? <span className="bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm">ACTIVO</span>
+                    : <span className="bg-gray-500 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm">OCULTO</span>}
+              </div>
+            </div>
+            
+            <div className="p-4 flex-1">
+               <h3 className="font-bold text-gray-900 dark:text-gray-100">{slider.title || <span className="italic text-gray-400 font-normal">Sin título</span>}</h3>
+               <p className="text-xs text-gray-500 mt-1">{slider.subtitle || <span className="italic text-gray-400 font-normal">Sin subtítulo</span>}</p>
+               {slider.link_url && <p className="text-[10px] font-mono text-blue-500 mt-2 truncate">🔗 {slider.link_url}</p>}
+            </div>
+
+            <div className="flex border-t dark:border-gray-800">
+               <button onClick={() => handleEdit(slider)} className="flex-1 flex items-center justify-center gap-2 py-3 text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Edit2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Editar</span>
+               </button>
+               <div className="w-[1px] bg-gray-200 dark:bg-gray-800"></div>
+               <button onClick={() => handleDelete(slider.id, slider.image_url)} disabled={isLoading} className="flex-1 flex items-center justify-center gap-2 py-3 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-bold">Eliminar</span>
+               </button>
+            </div>
+          </div>
+        ))}
+
+        {initialSliders.length === 0 && !isEditing && (
+          <div className="text-center py-12 bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800">
+            <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="font-bold">No hay banners configurados</p>
+          </div>
+        )}
       </div>
     </div>
   )

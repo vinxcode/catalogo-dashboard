@@ -42,7 +42,8 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-sm border dark:border-gray-800 overflow-hidden">
+      {/* Vista de Escritorio (Tabla) */}
+      <div className="hidden md:block bg-white dark:bg-[#0f172a] rounded-xl shadow-sm border dark:border-gray-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left align-middle">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-800 text-gray-700 dark:text-gray-300">
@@ -128,6 +129,60 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Vista de Móvil (Cards) */}
+      <div className="md:hidden space-y-4">
+        {products.map((product) => (
+          <div key={product.id} className="bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800 p-4 shadow-sm space-y-4">
+            <div className="flex gap-4">
+              <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border dark:border-gray-700">
+                {product.product_images?.[0]?.image_url ? (
+                  <img src={product.product_images[0].image_url} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-6 h-6 text-gray-400" /></div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">{product.name}</h3>
+                  <span className="font-bold text-[var(--color-brand-royal)] text-sm ml-2">
+                    ${product.price?.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <span className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded font-medium">
+                    {product.category?.name || 'Varios'}
+                  </span>
+                  {product.is_featured && <span className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded font-medium">⭐ Destacado</span>}
+                </div>
+                <p className="text-[10px] text-gray-500 mt-2 line-clamp-1">{product.description || 'Sin descripción'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between pt-2 border-t dark:border-gray-800">
+               <div>
+                  {product.is_active 
+                    ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">VISIBLE</span>
+                    : <span className="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">OCULTO</span>}
+               </div>
+               <div className="flex gap-2">
+                 <Link href={`/products/${product.id}`} className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <Edit2 className="w-4 h-4" />
+                 </Link>
+                 <button onClick={() => handleDelete(product.id, product.name)} disabled={isLoading} className="p-2 text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <Trash2 className="w-4 h-4" />
+                 </button>
+               </div>
+            </div>
+          </div>
+        ))}
+
+        {products.length === 0 && (
+          <div className="text-center py-10 bg-white dark:bg-[#0f172a] rounded-xl border dark:border-gray-800">
+            <p className="text-gray-500">No hay productos.</p>
+          </div>
+        )}
       </div>
     </div>
   )
