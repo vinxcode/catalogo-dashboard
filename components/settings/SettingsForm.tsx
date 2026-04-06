@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { updateStoreSettings } from '@/actions/settings'
+import { changePassword } from '@/actions/auth'
 import { toast } from 'sonner'
 import { uploadImage, deleteImage } from '@/actions/storage'
-import { Save, Store, Phone, Link as LinkIcon, MapPin, Users, FileText, Image as ImageIcon, Trash2 } from 'lucide-react'
+import { Save, Store, Phone, Link as LinkIcon, MapPin, Users, FileText, Image as ImageIcon, Trash2, Mail, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export function SettingsForm({ initialSettings }: { initialSettings: Record<string, string> }) {
@@ -17,6 +18,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
     instagram_url: initialSettings.instagram_url || '',
     tiktok_url: initialSettings.tiktok_url || '',
     address: initialSettings.address || '',
+    email: initialSettings.email || '',
     // Storefront content pages
     about_title: initialSettings.about_title || '',
     about_content: initialSettings.about_content || '',
@@ -26,6 +28,10 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
   })
   
   const [isLoading, setIsLoading] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,6 +48,31 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
       toast.error(err.message, { id: toastId })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden')
+      return
+    }
+    
+    setIsChangingPassword(true)
+    const toastId = toast.loading('Cambiando contraseña...')
+    
+    try {
+      const result = await changePassword(currentPassword, newPassword)
+      if ('error' in result && result.error) throw new Error(String(result.error))
+      
+      toast.success('Contraseña actualizada correctamente', { id: toastId })
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err: any) {
+      toast.error(err.message, { id: toastId })
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -87,6 +118,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
   }
 
   return (
+    <>
     <form onSubmit={handleSave} className="space-y-8 max-w-4xl pb-10">
       <div className="flex justify-between items-center bg-white dark:bg-[#0f172a] p-4 rounded-xl border dark:border-gray-800 shadow-sm sticky top-0 z-10">
         <h3 className="font-bold text-gray-500 text-sm italic">Modifica los ajustes y presiona Guardar</h3>
@@ -202,7 +234,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
             <h2 className="text-lg font-semibold">Redes Sociales</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Facebook URL</label>
               <input 
@@ -231,6 +263,16 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
                 onChange={e => handleChange('tiktok_url', e.target.value)}
                 className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-gray-800 dark:bg-gray-900 dark:border-gray-700" 
                 placeholder="https://tiktok.com/@..."
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email de Contacto</label>
+              <input 
+                type="email" 
+                value={settings.email}
+                onChange={e => handleChange('email', e.target.value)}
+                className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-red-600 dark:bg-gray-900 dark:border-gray-700" 
+                placeholder="info@tuempresa.com"
               />
             </div>
           </div>
@@ -305,5 +347,59 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
         </div>
       </div>
     </form>
+
+    <form onSubmit={handlePasswordChange} className="space-y-8 max-w-4xl pb-10">
+      <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+        <div className="flex items-center gap-2 text-[var(--color-brand-deep)] dark:text-[var(--color-brand-sky)] border-b pb-2 dark:border-gray-800 mb-4">
+          <Lock className="w-5 h-5" />
+          <h2 className="text-lg font-semibold">Cambiar Contraseña</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña Actual</label>
+            <input 
+              type="password" 
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              required
+              className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-600 dark:bg-gray-900 dark:border-gray-700" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Nueva Contraseña</label>
+            <input 
+              type="password" 
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              required
+              className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-600 dark:bg-gray-900 dark:border-gray-700" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Confirmar Nueva Contraseña</label>
+            <input 
+              type="password" 
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+              className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-600 dark:bg-gray-900 dark:border-gray-700" 
+            />
+          </div>
+        </div>
+
+        <div className="pt-4 flex justify-end">
+          <button 
+            type="submit" 
+            disabled={isChangingPassword}
+            className="bg-gray-800 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 hover:bg-gray-700 disabled:opacity-50 transition shadow-sm"
+          >
+            <Lock className="w-5 h-5" />
+            {isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña'}
+          </button>
+        </div>
+      </div>
+    </form>
+    </>
   )
 }

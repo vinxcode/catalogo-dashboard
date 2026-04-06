@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { Home, Package, Tags, Image as ImageIcon, Settings, User } from 'lucide-react'
+import { Home, Package, Tags, Image as ImageIcon, Settings, User, LogOut } from 'lucide-react'
 import { getStoreSettings } from '@/actions/settings'
+import { logout } from '@/actions/auth'
 
 export async function Sidebar() {
   const settings = await getStoreSettings()
@@ -62,8 +63,14 @@ export async function Sidebar() {
         </Link>
       </nav>
 
-      <div className="p-4 bg-[var(--color-brand-royal)]/30 text-xs text-[var(--color-brand-sky)] text-center border-t border-[var(--color-brand-royal)]">
-        Dashboard v1.0
+      <div className="p-4 bg-[var(--color-brand-royal)]/30 text-xs text-[var(--color-brand-sky)] text-center border-t border-[var(--color-brand-royal)] flex flex-col gap-3">
+        <form action={logout}>
+          <button type="submit" className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition">
+            <LogOut className="w-4 h-4" />
+            <span className="font-medium text-sm">Cerrar Sesión</span>
+          </button>
+        </form>
+        <div>Dashboard v1.0</div>
       </div>
     </aside>
   )

@@ -67,6 +67,7 @@ export type StoreSettingsMap = {
   facebook_url: string
   instagram_url: string
   tiktok_url: string
+  email: string
   address: string
   store_name: string
   [key: string]: string
