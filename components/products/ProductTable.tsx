@@ -13,6 +13,10 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
   const [isLoading, setIsLoading] = useState(false)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
 
+  // Strip <br> tags from description for table preview
+  const cleanDescription = (desc: string | null) => 
+    desc ? desc.replace(/<br\s*\/?>/gi, ' ').trim() : 'Sin descripción'
+
   // Sync state when DB updates
   useEffect(() => {
     setProducts(initialProducts)
@@ -98,7 +102,7 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
                        )}
                     </div>
                     <p className="text-gray-500 text-xs mt-2 line-clamp-1 max-w-sm">
-                      {product.description || 'Sin descripción'}
+                      {cleanDescription(product.description)}
                     </p>
                   </td>
                   <td className="px-6 py-4 text-right font-medium text-lg">
@@ -178,7 +182,7 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
                   </span>
                   {product.is_featured && <span className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded font-medium">⭐ Destacado</span>}
                 </div>
-                <p className="text-[10px] text-gray-500 mt-2 line-clamp-1">{product.description || 'Sin descripción'}</p>
+                <p className="text-[10px] text-gray-500 mt-2 line-clamp-1">{cleanDescription(product.description)}</p>
                 <div className="mt-2">
                   {product.is_active 
                     ? <span className="text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">VISIBLE</span>

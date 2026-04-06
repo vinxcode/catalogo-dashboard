@@ -129,7 +129,7 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
     try {
       const payload = {
         name: formData.name,
-        description: formData.description.replace(/\n/g, '<br>'),
+        description: formData.description,
         price: parseFloat(formData.price),
         category_id: formData.category_id,
         is_active: formData.is_active,
