@@ -1,12 +1,27 @@
 import Link from 'next/link'
-import { Home, Package, Tags, Image as ImageIcon, Settings } from 'lucide-react'
+import { Home, Package, Tags, Image as ImageIcon, Settings, User } from 'lucide-react'
+import { getStoreSettings } from '@/actions/settings'
 
-export function Sidebar() {
+export async function Sidebar() {
+  const settings = await getStoreSettings()
+  const logoUrl = settings.store_logo
+  const storeName = settings.store_name || 'Multi Impresiones AH'
+
   return (
     <aside className="fixed inset-y-0 left-0 w-64 bg-[var(--color-brand-deep)] text-white shadow-lg overflow-y-auto z-50 flex flex-col hidden md:flex">
-      <div className="p-6 border-b border-[var(--color-brand-royal)]">
-        <h1 className="text-xl font-bold tracking-tight">Catalogo Admin</h1>
-        <p className="text-sm text-[var(--color-brand-sky)] mt-1">Multi Impresiones AH</p>
+      <div className="p-6 border-b border-[var(--color-brand-royal)] flex flex-col items-center text-center">
+        {logoUrl ? (
+          <img src={logoUrl} alt={storeName} className="h-16 w-auto object-contain mb-3" />
+        ) : (
+          <div className="w-12 h-12 rounded-lg bg-[var(--color-brand-royal)] flex items-center justify-center mb-3">
+             <Home className="w-6 h-6 text-[var(--color-brand-sky)]" />
+          </div>
+        )}
+        <h1 className="text-sm font-bold tracking-tight uppercase">{storeName}</h1>
+        <div className="flex items-center gap-1.5 mt-2 bg-black/20 px-3 py-1 rounded-full border border-white/10">
+            <User className="w-3 h-3 text-[var(--color-brand-sky)]" />
+            <p className="text-[10px] font-bold text-[var(--color-brand-sky)] uppercase tracking-wider">Administrador de Tienda</p>
+        </div>
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">
