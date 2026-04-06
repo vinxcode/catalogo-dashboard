@@ -5,9 +5,10 @@ import { notFound } from 'next/navigation'
 
 export const revalidate = 0
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
+export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const [product, categories] = await Promise.all([
-    getProduct(params.id).catch(() => null),
+    getProduct(id).catch(() => null),
     getCategories()
   ])
 

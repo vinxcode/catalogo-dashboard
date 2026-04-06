@@ -33,7 +33,6 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
     price: initialData?.price?.toString() || '',
     category_id: initialData?.category_id || '',
     is_active: initialData?.is_active ?? true,
-    is_featured: initialData?.is_featured ?? false,
     tags: initialData?.tags || [],
   })
 
@@ -134,7 +133,6 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
         price: parseFloat(formData.price),
         category_id: formData.category_id,
         is_active: formData.is_active,
-        is_featured: formData.is_featured,
         tags: formData.tags
       }
 
@@ -186,7 +184,7 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
           className="bg-[var(--color-brand-royal)] text-white px-6 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[var(--color-brand-deep)] disabled:opacity-50 transition"
         >
           <Save className="w-5 h-5" />
-          {isLoading ? 'Guardando...' : 'Guardar Producto'}
+          {isLoading ? 'Guardando...' : isEditing ? 'Guardar Cambios' : 'Crear Producto'}
         </button>
       </div>
 
@@ -400,19 +398,6 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
               <div>
                 <p className="font-medium">Publicado Activo</p>
                 <p className="text-xs text-gray-500 mt-0.5">Visible para clientes de la tienda.</p>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50 transition">
-              <input 
-                type="checkbox" 
-                checked={formData.is_featured}
-                onChange={e => setFormData({...formData, is_featured: e.target.checked})}
-                className="w-5 h-5 rounded text-yellow-500 focus:ring-yellow-500" 
-              />
-              <div>
-                <p className="font-medium">⭐ Destacado</p>
-                <p className="text-xs text-gray-500 mt-0.5">Se mostrará en secciones especiales del inicio.</p>
               </div>
             </label>
           </div>
