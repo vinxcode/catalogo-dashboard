@@ -29,7 +29,7 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
   }
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
-    description: initialData?.description || '',
+    description: (initialData?.description || '').replace(/<br\s*\/?>/gi, '\n'),
     price: initialData?.price?.toString() || '',
     category_id: initialData?.category_id || '',
     is_active: initialData?.is_active ?? true,
@@ -129,7 +129,7 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
     try {
       const payload = {
         name: formData.name,
-        description: formData.description,
+        description: formData.description.replace(/\n/g, '<br>'),
         price: parseFloat(formData.price),
         category_id: formData.category_id,
         is_active: formData.is_active,
