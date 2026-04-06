@@ -79,37 +79,37 @@ export interface Database {
         Row: Category; 
         Insert: Partial<Category>; 
         Update: Partial<Category>;
-        Relationships: any[];
+        Relationships: [];
       }
       products: { 
         Row: Product; 
         Insert: Partial<Product>; 
         Update: Partial<Product>;
-        Relationships: any[];
+        Relationships: [];
       }
       product_images: { 
         Row: ProductImage; 
         Insert: Partial<ProductImage>; 
         Update: Partial<ProductImage>;
-        Relationships: any[];
+        Relationships: [];
       }
       product_variants: {
         Row: ProductVariant;
         Insert: Partial<ProductVariant>;
         Update: Partial<ProductVariant>;
-        Relationships: any[];
+        Relationships: [];
       }
       sliders: { 
         Row: Slider; 
         Insert: Partial<Slider>; 
         Update: Partial<Slider>;
-        Relationships: any[];
+        Relationships: [];
       }
       store_settings: { 
         Row: StoreSetting; 
         Insert: Partial<StoreSetting>; 
         Update: Partial<StoreSetting>;
-        Relationships: any[];
+        Relationships: [];
       }
     }
     Views: {

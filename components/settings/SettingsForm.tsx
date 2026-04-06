@@ -34,7 +34,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
 
     try {
       const result = await updateStoreSettings(settings)
-      if (result.error) throw new Error(result.error)
+      if ('error' in result && result.error) throw new Error(String(result.error))
       
       toast.success('Ajustes de la tienda guardados correctamente', { id: toastId })
       router.refresh()

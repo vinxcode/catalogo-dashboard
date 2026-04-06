@@ -87,12 +87,12 @@ export default async function DashboardHome() {
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
-                {recentProducts?.map((product) => (
+                {recentProducts?.map((product: any) => (
                   <tr key={product.id} className="border-b transition-colors dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="p-4 align-middle font-medium">{product.name}</td>
                     <td className="p-4 align-middle">
                       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-                        {((product as any).category as any)?.name || 'Sin categoría'}
+                        {product.category?.name || 'Sin categoría'}
                       </span>
                     </td>
                     <td className="p-4 align-middle text-right">${product.price.toFixed(2)}</td>                  </tr>

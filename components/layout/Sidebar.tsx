@@ -62,7 +62,7 @@ export async function Sidebar() {
         </Link>
       </nav>
 
-      <div className="p-4 bg-[var(--color-brand-royal)]/30 text-xs text-[var(--color-brand-sky)]text-center border-t border-[var(--color-brand-royal)]">
+      <div className="p-4 bg-[var(--color-brand-royal)]/30 text-xs text-[var(--color-brand-sky)] text-center border-t border-[var(--color-brand-royal)]">
         Dashboard v1.0
       </div>
     </aside>
