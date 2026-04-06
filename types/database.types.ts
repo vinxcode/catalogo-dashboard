@@ -8,6 +8,16 @@ export type Category = {
   created_at: string
 }
 
+export type ProductVariant = {
+  id: string
+  product_id: string
+  name: string
+  price: number
+  is_active: boolean
+  display_order: number
+  created_at: string
+}
+
 export type Product = {
   id: string
   name: string
@@ -16,10 +26,12 @@ export type Product = {
   category_id: string | null
   is_active: boolean
   is_featured: boolean
+  tags: string[] | null
   created_at: string
   updated_at: string
   category?: Category
   product_images?: ProductImage[]
+  product_variants?: ProductVariant[]
 }
 
 export type ProductImage = {
@@ -79,6 +91,12 @@ export interface Database {
         Row: ProductImage; 
         Insert: Partial<ProductImage>; 
         Update: Partial<ProductImage>;
+        Relationships: any[];
+      }
+      product_variants: {
+        Row: ProductVariant;
+        Insert: Partial<ProductVariant>;
+        Update: Partial<ProductVariant>;
         Relationships: any[];
       }
       sliders: { 

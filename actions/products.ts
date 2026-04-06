@@ -10,7 +10,8 @@ export async function getProducts() {
     .select(`
       *,
       category:categories(name),
-      product_images(image_url, display_order, is_primary)
+      product_images(image_url, display_order, is_primary),
+      product_variants(*)
     `)
     .order('created_at', { ascending: false })
   
@@ -24,7 +25,8 @@ export async function getProduct(id: string) {
     .from('products')
     .select(`
       *,
-      product_images(*)
+      product_images(*),
+      product_variants(*)
     `)
     .eq('id', id)
     .single()
@@ -33,7 +35,7 @@ export async function getProduct(id: string) {
   return data
 }
 
-export async function createProduct(productData: any, images: any[]) {
+export async function createProduct(productData: any, images: any[], variants: any[] = []) {
   const supabase = createAdminClient()
   
   // 1. Crear producto
@@ -61,11 +63,24 @@ export async function createProduct(productData: any, images: any[]) {
     if (imagesError) console.error("Error guardando imágenes:", imagesError.message)
   }
 
+  // 3. Insertar variantes
+  if (variants.length > 0) {
+    const variantsToInsert = variants.map((v, i) => ({
+      name: v.name,
+      price: v.price,
+      is_active: v.is_active ?? true,
+      product_id: product.id,
+      display_order: i
+    }))
+    const { error: variantError } = await supabase.from('product_variants').insert(variantsToInsert)
+    if (variantError) console.error("Error guardando variantes:", variantError.message)
+  }
+
   revalidatePath('/products')
   return { success: true, id: product.id }
 }
 
-export async function updateProduct(id: string, productData: any, images: any[]) {
+export async function updateProduct(id: string, productData: any, images: any[], variants: any[] = []) {
   const supabase = createAdminClient()
   
   // 1. Actualizar producto
@@ -93,6 +108,21 @@ export async function updateProduct(id: string, productData: any, images: any[])
       .insert(imagesToInsert)
       
     if (imagesError) console.error("Error actualizando imágenes:", imagesError.message)
+  }
+
+  // 4. Actualizar variantes (borrar viejas e insertar nuevas)
+  await supabase.from('product_variants').delete().eq('product_id', id)
+  
+  if (variants.length > 0) {
+    const variantsToInsert = variants.map((v, i) => ({
+      name: v.name,
+      price: v.price,
+      is_active: v.is_active ?? true,
+      product_id: id,
+      display_order: i
+    }))
+    const { error: variantError } = await supabase.from('product_variants').insert(variantsToInsert)
+    if (variantError) console.error("Error actualizando variantes:", variantError.message)
   }
 
   revalidatePath('/products')

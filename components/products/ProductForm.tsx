@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone'
 import { uploadImage, deleteImage } from '@/actions/storage'
 import { createProduct, updateProduct } from '@/actions/products'
 import { toast } from 'sonner'
-import { Save, ArrowLeft, Image as ImageIcon, X, GripVertical } from 'lucide-react'
+import { Save, ArrowLeft, Image as ImageIcon, X, GripVertical, Plus, Tag } from 'lucide-react'
 import Link from 'next/link'
 
 // Quick array reorder helper
@@ -34,7 +34,42 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
     category_id: initialData?.category_id || '',
     is_active: initialData?.is_active ?? true,
     is_featured: initialData?.is_featured ?? false,
+    tags: initialData?.tags || [],
   })
+
+  const [tagInput, setTagInput] = useState('')
+  const [variants, setVariants] = useState<any[]>(
+    initialData?.product_variants || []
+  )
+
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      const newTag = tagInput.trim()
+      if (newTag && !formData.tags.includes(newTag)) {
+        setFormData({ ...formData, tags: [...formData.tags, newTag] })
+      }
+      setTagInput('')
+    }
+  }
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter((tag: string) => tag !== tagToRemove) })
+  }
+
+  const handleAddVariant = () => {
+    setVariants([...variants, { name: '', price: '' }])
+  }
+
+  const handleVariantChange = (index: number, field: string, value: string | boolean) => {
+    const newVariants = [...variants]
+    newVariants[index][field] = value
+    setVariants(newVariants)
+  }
+
+  const handleRemoveVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index))
+  }
 
   // Images state: { url: string, isNew?: boolean, file?: File }
   const [images, setImages] = useState<any[]>(
@@ -99,17 +134,23 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
         price: parseFloat(formData.price),
         category_id: formData.category_id,
         is_active: formData.is_active,
-        is_featured: formData.is_featured
+        is_featured: formData.is_featured,
+        tags: formData.tags
       }
 
       const imagesPayload = images.map(img => ({ url: img.url }))
+      const variantsPayload = variants.map(v => ({ 
+        name: v.name, 
+        price: parseFloat(v.price), 
+        is_active: v.is_active ?? true 
+      })).filter(v => v.name && !isNaN(v.price))
 
       if (isEditing) {
-        const res = await updateProduct(initialData.id, payload, imagesPayload)
+        const res = await updateProduct(initialData.id, payload, imagesPayload, variantsPayload)
         if (res.error) throw new Error(res.error)
         toast.success('Producto actualizado', { id: toastId })
       } else {
-        const res = await createProduct(payload, imagesPayload)
+        const res = await createProduct(payload, imagesPayload, variantsPayload)
         if (res.error) throw new Error(res.error)
         toast.success('Producto creado', { id: toastId })
       }
@@ -178,6 +219,26 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
                 placeholder="Describe el producto. Detalles, medidas, materiales..."
               />
             </div>
+            
+            <div className="space-y-2">
+              <label className="font-medium flex items-center gap-2"><Tag className="w-4 h-4"/> Etiquetas de Búsqueda</label>
+              <div className="p-2 border rounded-lg dark:border-gray-700 dark:bg-gray-900 flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-blue-500">
+                {formData.tags.map((tag: string) => (
+                  <span key={tag} className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-sm">
+                    {tag}
+                    <button type="button" onClick={() => handleRemoveTag(tag)} className="text-gray-500 hover:text-red-500"><X className="w-3 h-3" /></button>
+                  </span>
+                ))}
+                <input 
+                  type="text" 
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={handleAddTag}
+                  className="flex-1 min-w-[100px] outline-none bg-transparent"
+                  placeholder={formData.tags.length === 0 ? "Escribe etiqueta y presiona Enter o Coma" : ""}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
@@ -231,6 +292,61 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
                      </div>
                    ))}
                  </div>
+               </div>
+             )}
+          </div>
+
+          {/* Variantes */}
+          <div className="bg-white dark:bg-[#0f172a] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+             <div className="flex justify-between items-center border-b pb-2 dark:border-gray-800">
+               <h2 className="text-lg font-semibold">Variantes del Producto</h2>
+               <button 
+                 type="button" 
+                 onClick={handleAddVariant}
+                 className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium"
+               >
+                 <Plus className="w-4 h-4" /> Agregar Variante
+               </button>
+             </div>
+             
+             {variants.length === 0 ? (
+               <p className="text-gray-500 text-sm py-4 text-center">No hay variantes configuradas. El producto usará su precio base.</p>
+             ) : (
+               <div className="space-y-3">
+                 {variants.map((v, index) => (
+                   <div key={index} className="flex gap-3 items-start border p-3 rounded-lg dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20">
+                     <div className="flex-1 space-y-2">
+                       <label className="text-xs font-medium text-gray-500 group-hover:text-blue-500 transition-colors">Nombre de Variante</label>
+                       <input 
+                         required
+                         type="text" 
+                         value={v.name}
+                         onChange={e => handleVariantChange(index, 'name', e.target.value)}
+                         className="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-700" 
+                         placeholder="Ej. Lona 2x2m"
+                       />
+                     </div>
+                     <div className="w-32 space-y-2">
+                       <label className="text-xs font-medium text-gray-500 group-hover:text-blue-500 transition-colors">Precio (Total/Extra)</label>
+                       <input 
+                         required
+                         type="number" 
+                         step="0.01"
+                         value={v.price}
+                         onChange={e => handleVariantChange(index, 'price', e.target.value)}
+                         className="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-700" 
+                         placeholder="0.00"
+                       />
+                     </div>
+                     <button 
+                       type="button" 
+                       onClick={() => handleRemoveVariant(index)}
+                       className="mt-[26px] p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                     >
+                       <X className="w-5 h-5" />
+                     </button>
+                   </div>
+                 ))}
                </div>
              )}
           </div>
