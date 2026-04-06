@@ -1,13 +1,21 @@
-import { Menu, Bell } from 'lucide-react'
+'use client'
+
+import { Menu, Bell, X } from 'lucide-react'
+import { useUIStore } from '@/store/ui'
 
 export function Header() {
+  const { toggleSidebar, isSidebarOpen } = useUIStore()
+
   return (
     <header className="bg-white dark:bg-[#0f172a] shadow-sm sticky top-0 z-40 border-b border-[var(--color-brand-pale)] dark:border-[#1e293b]">
       <div className="flex h-16 items-center px-4 md:px-6 justify-between md:justify-end">
 
         {/* Mobile menu icon (only visible on mobile) */}
-        <button className="md:hidden p-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100">
-          <Menu className="w-6 h-6" />
+        <button 
+          onClick={toggleSidebar}
+          className="md:hidden p-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition"
+        >
+          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
 
         <div className="flex items-center gap-4">

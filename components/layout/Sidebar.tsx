@@ -9,7 +9,7 @@ export async function Sidebar() {
   const storeName = settings.store_name || 'Multi Impresiones AH'
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-[var(--color-brand-deep)] text-white shadow-lg overflow-y-auto z-50 flex flex-col hidden md:flex">
+    <aside className="w-full h-full bg-[var(--color-brand-deep)] text-white flex flex-col">
       <div className="p-6 border-b border-[var(--color-brand-royal)] flex flex-col items-center text-center">
         {logoUrl ? (
           <img src={logoUrl} alt={storeName} className="h-16 w-auto object-contain mb-3" />
