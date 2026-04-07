@@ -86,7 +86,7 @@ export default async function DashboardHome() {
                       {product.category?.name || 'Sin categoría'}
                     </span>
                   </td>
-                  <td className="p-4 align-middle text-right">${product.price.toFixed(2)}</td>                  </tr>
+                  <td className="p-4 align-middle text-right">${product.price !== null && product.price !== undefined ? Number(product.price).toFixed(2) : '0.00'}</td>                  </tr>
               ))}
               {(!recentProducts || recentProducts.length === 0) && (
                 <tr>

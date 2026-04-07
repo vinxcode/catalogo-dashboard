@@ -106,7 +106,7 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
                     </p>
                   </td>
                   <td className="px-6 py-4 text-right font-medium text-lg">
-                    ${product.price ? product.price.toFixed(2) : '0.00'}
+                    ${product.price !== null && product.price !== undefined ? Number(product.price).toFixed(2) : '0.00'}
                   </td>
                   <td className="px-6 py-4 text-center">
                      {product.is_active 
@@ -173,7 +173,7 @@ export function ProductTable({ initialProducts }: { initialProducts: any[] }) {
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">{product.name}</h3>
                   <span className="font-bold text-[var(--color-brand-royal)] text-sm ml-2">
-                    ${product.price?.toFixed(2)}
+                    ${product.price !== null && product.price !== undefined ? Number(product.price).toFixed(2) : '0.00'}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-1">
