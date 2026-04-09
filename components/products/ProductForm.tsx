@@ -76,14 +76,23 @@ export function ProductForm({ initialData = null, categories = [] }: { initialDa
   )
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    // Para simplificar, subimos las imágenes inmediatamente al drop
-    // Esto es común para poder previsualizarlas desde la URL real y manejar su estado
+    // Validar tamaño de archivos (Máx 4.5MB para Vercel)
+    const MAX_SIZE = 4.5 * 1024 * 1024
+    const validFiles = acceptedFiles.filter(file => file.size <= MAX_SIZE)
+    const invalidFiles = acceptedFiles.filter(file => file.size > MAX_SIZE)
+
+    if (invalidFiles.length > 0) {
+      toast.error(`Algunas imágenes exceden el límite de 4.5MB y no serán subidas.`)
+    }
+
+    if (validFiles.length === 0) return
+
     setIsLoading(true)
-    const toastId = toast.loading(`Subiendo ${acceptedFiles.length} imagen(es)...`)
+    const toastId = toast.loading(`Subiendo ${validFiles.length} imagen(es)...`)
     
     try {
       const newImages: { url: string, isNew?: boolean }[] = []
-      for (const file of acceptedFiles) {
+      for (const file of validFiles) {
         const result = await uploadImage(file, 'product-images')
         if (result.error) throw new Error(result.error)
         newImages.push({ url: result.url as string, isNew: true })

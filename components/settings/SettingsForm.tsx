@@ -84,6 +84,13 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Validar tamaño de archivo (Máx 4.5MB para Vercel)
+    const MAX_SIZE = 4.5 * 1024 * 1024
+    if (file.size > MAX_SIZE) {
+      toast.error('La imagen del logo excede el límite de 4.5MB.')
+      return
+    }
+
     setIsLoading(true)
     const toastId = toast.loading('Subiendo logo...')
 

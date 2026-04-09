@@ -68,6 +68,13 @@ export function SliderManager({ initialSliders }: { initialSliders: any[] }) {
     if (!e.target.files || e.target.files.length === 0) return
     const file = e.target.files[0]
 
+    // Validar tamaño de archivo (Máx 4.5MB para Vercel)
+    const MAX_SIZE = 4.5 * 1024 * 1024
+    if (file.size > MAX_SIZE) {
+      toast.error('La imagen del banner excede el límite de 4.5MB.')
+      return
+    }
+
     setIsUploading(true)
     const toastId = toast.loading('Subiendo imagen para el slider...')
     try {
