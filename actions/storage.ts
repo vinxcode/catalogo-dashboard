@@ -10,11 +10,17 @@ export async function uploadImage(file: File, bucket: string = 'product-images')
   const ext = file.name.split('.').pop()
   const fileName = `${uuidv4()}.${ext}`
   
+  // En Next.js Server Actions, a veces enviar el objeto File directamente a Supabase
+  // falla, por lo que es más seguro convertirlo en un Buffer
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+  
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(fileName, file, {
+    .upload(fileName, buffer, {
       cacheControl: '3600',
-      upsert: false
+      upsert: false,
+      contentType: file.type
     })
 
   if (error) {
