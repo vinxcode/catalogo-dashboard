@@ -8,6 +8,17 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Dashboard Admin | Multi Impresiones AH",
   description: "Panel de administración para el catálogo CPG",
+  manifest: "/favicon-mi/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-mi/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-mi/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-mi/favicon.ico" },
+    ],
+    apple: [
+      { url: "/favicon-mi/apple-touch-icon.png" },
+    ],
+  },
 };
 
 export default function RootLayout({
